@@ -220,6 +220,7 @@ export interface CurrentValues {
 }
 
 export interface PanzoomObject {
+
   /**
    * Bind the default down, move, and up event listeners to the Panzoom element.
    * This does not normally need to be called.
@@ -394,4 +395,8 @@ export interface PanzoomObject {
    * ```
    */
   zoomWithWheel: (event: WheelEvent, zoomOptions?: ZoomOptions) => CurrentValues
+
+  addEventListener: (eventType: string, listener: () => any, options: boolean | { capture: boolean; }) => void
+
+  removeEventListener: (eventType: string, listener: () => any, options: boolean | { capture: boolean; }) => void
 }

@@ -536,11 +536,60 @@ function Panzoom(
     onPointer('up', document, handleUp, { passive: true })
   }
 
+  type eventListenersType = {
+    eventType: string
+    listener: () => any
+    options: boolean
+  }
+
+  const eventListeners: eventListenersType[] = []
+
   function destroy() {
     bound = false
     destroyPointer('down', options.canvas ? parent : elem, handleDown)
     destroyPointer('move', document, handleMove)
     destroyPointer('up', document, handleUp)
+    eventListeners.forEach((item) =>
+      elem.removeEventListener(item.eventType, item.listener, item.options)
+    )
+  }
+
+  function getEventDescriptor(
+    eventType: string,
+    listener: () => any,
+    options: boolean | { capture: boolean }
+  ) {
+    return {
+      eventType: eventType,
+      listener: listener,
+      options: !!(options !== null && typeof options === 'object' ? options.capture : options)
+    }
+  }
+
+  function addEventListener(
+    eventType: string,
+    listener: () => any,
+    options: boolean | { capture: boolean }
+  ) {
+    elem.addEventListener(eventType, listener, options)
+    eventListeners.push(getEventDescriptor(eventType, listener, options))
+  }
+
+  function removeEventListener(
+    eventType: string,
+    listener: () => any,
+    options: boolean | { capture: boolean }
+  ) {
+    const eventDescriptor = getEventDescriptor(eventType, listener, options)
+    const index = eventListeners.findIndex((element) =>
+      Object.keys(element).every(
+        (key) =>
+          element[key as keyof eventListenersType] ===
+          eventDescriptor[key as keyof eventListenersType]
+      )
+    )
+    if (~index) eventListeners.splice(index, 1)
+    elem.removeEventListener(eventType, listener, options)
   }
 
   if (!options.noBind) {
@@ -566,7 +615,9 @@ function Panzoom(
     zoomIn,
     zoomOut,
     zoomToPoint,
-    zoomWithWheel
+    zoomWithWheel,
+    addEventListener,
+    removeEventListener
   }
 }
 
